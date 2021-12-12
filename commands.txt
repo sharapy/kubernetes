@@ -1,0 +1,198 @@
+Generic:
+	Kubectl explain pod --recursive | less	To search command options
+	Kubectl explain pod --recursive | grep -A5 tolerations 	Gives all options of tolerations
+	Kubectl get events	To list the scheduling events
+	kubectl get events -A --sort-by=.metadata.creationTimestamp	Cluster wide events
+	Kubectl logs my-custom-scheduler --name-space=kube-system	
+	kubectl run --restart=Never --image=busybox static-busybox --dry-run=client -o yaml --command -- sleep 1000 > /etc/kubernetes/manifests/static-busybox.yaml	Creating static pod
+	Kubectl top node	Like linux top for pods
+	Kubectl logs -f <pod-name> <container-name>	Container name is required in case of multi-container pods
+	kubectl -n elastic-stack exec -it app -- cat /log/app.log 	From the container 
+	k api-resources --namespaced -o name	Get all namespaced resources
+
+Pods:
+	Kubectl run nginx --image nginx	Deploy  a pod with nginx image
+	Kubectl get po	To get all pods
+	Kubectl create -f pod-def.yaml	 to create pods from yaml
+	Kubectl describe po podname	Gives full detail of pods
+	Kubectl delete po podname	 to delete the pod
+	kubectl run nginx --image=nginx --dry-run=client -o yaml > pod_def.yaml	To create yaml from imperative command
+	kubectl run redis --image=redis:alpine --labels=tier=db	 set label imperative
+	kubectl run httpd --image=httpd:alpine --port=80 --expose	Create pod and expose
+	Kubectl get pods --show-labels	To show the labels along with pods
+	Kubectl get pods -l env=dev	List only the pods with env=dev label
+	
+	
+ReplicaSet:
+	Kubectl scale --replicas=6 -f replicaset-def.yaml	Directly from imperative command
+	Kubectl replace -f replicaset-def.yaml	To update the replicaSet from YAML
+	Kubectl scale --replicas=6 replicaset myreplicaname	By name of replicaset
+	Kubectl get rs	Get replicaSet
+	Kubectl describe rs replicasetname	Get details
+	kubectl create deployment --image=nginx nginx --replicas=4 --dry-run=client -o yaml > nginx-deployment.yaml	Create deployment with replicas using imperative command
+	
+Deployments:
+	Kubectl create -f deploy-def.yaml	Create deployment from yaml
+	Kubectl get deploy	Get the deployments
+	Kubectl get all	Get all the objects created by deployment
+	kubectl create deployment --image=nginx nginx	Create deployment from imperataive
+	kubectl create deployment --image=nginx nginx --dry-run=client -o yaml > nginx-deployment.yaml	Create deployment yaml from imperative command
+	Kubectl set image deployment nginx nginx=nginx:1	Update the image of deployment
+	Kubectl replace -f nginx.yaml	Replace the config from file
+	Kubectl replace --force -f nginx.yaml	Forcefully do it
+	
+Namespaces:
+	Kubectl get pods -n namespacename	To get pods in namespace other than default
+	Kubectl create namespace dev	Create namespace called dev
+	Kubectl config set-context $(kubectl config current context) --namespace=dev	Set default context to dev
+	Kebectl get pods --all-namespaces	Get pods from all namespaces
+
+Services:
+	Kubectl create -f service-def.yaml	To create the service
+	Kubectl get services	Get all services in default ns
+	Kubectl expose deployment depl_name --name=webapp-service --target-port=8080 --type=NodePort --port=8080 --dry-run=cllient -o yaml > svc.yaml	
+	kubectl expose po redis --name=redis-service --port=6379	Expose pod
+	
+Scheduler
+	kubectl get pods --namespace kube-system	To check if scheduler pod is running
+		
+	
+Selector:
+	kubectl get po --selector=env=dev --no-headers | wc -l	Select and count number of pods
+	kubectl get all --selector env=prod,bu=finance,tier=frontend	
+	
+Taints and Toleration:
+	Kubectl taint nodes node-name key=value:taint-effect	Taint nodes with three taint effects NoSchedule, PreferNoSchedule, NoExecute 
+	kubectl taint node controlplane node-role.kubernetes.io/master:NoSchedule-	Append '-' to untaint the node
+	
+Nodes:
+	Kubectl label nodes <node-name>=<label-value>	Label existing nodes
+	
+DaemonSets
+	Kubectl get ds --all-namespaces	Get DaemonSets
+	
+Rolling updates:
+	Kubectl rollout status deployment/myapp-deployment	 get the status of deployment
+	Kubectl rollout history deployment/myapp-deployment	Get the history of deployment
+	Kubectl rollout undo deployment/myapp-deployment	Rollback: Undo the previous deployment
+	
+ConfigMap:
+	Kubectl create configmap configMapname --from-literal=<key>=<value>	Imperative command
+	Kubectl create -f configmap.yaml	Declarative
+	Kubectl create configmap <configmapName> --from-file=app_config.properties	
+	Kubectl get configmaps	Get all the configmaps
+	Kubectl describe configmaps	Describe the configmap
+	
+Secret:
+	Kubectl create secret generic <secretObject-name> --from-literal=<key>=<value>	Imperative way to createsecret
+	Kubectl create -f	Declarative way to create secret
+	Kubectl create secret generic <secretObjectName> --from-file=app_secret.properties	
+	Kubectl get secrets	Gets all secrets
+	Kubectl describe secrets	Shows all secrets without the value
+	Kubectl get secret app-secret -o yaml	Shows values too
+	echo -n 'bxldee=' | base64 --decode	Decode the secret on linux
+	Echo -n 'mysql' | base64	To encode the values
+		
+	
+Cluster Maintenance:
+	Kube-controller-manager --pod-eviction-timeout=5m0s	Configure the timeout for pod to be considered dead after node goes down.
+	Kubectl drain node-01	Remove the pods frm node, recreated  on other node
+	Kubectl uncordon node-01	Required to make the node schedulable again after previous drain operation
+	Kubectl cordon node-01	Simply marks the node unschedulable
+	Kubectl upgrade plan 	Plan and upgrade the cluster
+	Kubectl upgrade apply
+	
+ETCDCTL
+	
+TLS:
+	kubectl -n kube-system describe po kube-apiserver-controlplane	Shows all the paths
+	cat /etc/kubernetes/manifests/kube-apiserver.yaml	Same from yaml
+	kubectl -n kube-system describe po etcd-controlplane	Show etcd certs paths
+	cat /etc/kubernetes/manifests/etcd.yaml	Same from  yaml
+	openssl x509 -in /etc/kubernetes/pki/apiserver.crt -text -noout	Display contents of cert file
+	Docker ps -a | grep -i kube-apiserver	To check the status if kubectl is not working
+	Docker logs <container id>	To check what happened
+	cat akshay.csr | base64 | tr -d "\n"	Get the base 64 of csr 
+	Kubectl get csr	Get status of csr
+	kubectl certificate approve akshay	To approve the cert
+	kubectl get csr agent-smith -o yaml	To see request group and other details
+	kubectl  certificate deny agent-smith	Deny the request
+	kubectl delete csr agent-smith	Delete the csr
+	
+Kube config
+	#kubectl config view	
+	#kubectl config view --kubeconfig my-kube-config	View specific config
+	#kubectl config use-context research	If kubeconfig is defaule
+	#kubectl config --kubeconfig=/root/my-kube-config use-context research	Config from custom file
+	#kubectl config --kubeconfig=/root/my-kube-config current-context 	Current context from custom context file
+	
+RBAC:
+	#kubectl get roles	Get all the roles in default namespace
+	#kubectl get roles -A	Get roles in all namespaces
+	#kubectl -n kube-system describe role kube-proxy	Get the resources in roles
+	#kubectl -n kube-system describe rolebindings kube-proxy	Get the details on users/groups bound to particular role
+	#kubectl auth can-i --as dev-user get po 	Check permissions
+	/OR/
+	#kubectl get pods --as dev-user
+	kubectl create role developer --namespace=default --verb=list,create,delete --resource=pods	Imperative to create roles
+	kubectl create rolebinding dev-user-binding --namespace=default --role=developer --user=dev-user	Imperative to create rolebinding
+	kubectl -n blue describe roles,rolebindings	Get full details
+	kubectl -n blue edit role developer	Edit roles
+	
+ClusterRole and ClusterRoleBinding
+	#kubectl get clusterroles 	Get all cluster roles
+	kubectl get clusterrolebindings 	Get all cluster rolebindings
+	kubectl describe clusterrolebinding cluster-admin	To get binding details users/groups
+	kubectl create clusterrole node-worker --verb=create,list,watch,get --resource=pods -o yaml --dry-run=client > nodeworker.yaml	Create a cluster role to work on nodes
+	kubectl create clusterrolebinding node-worker-binding --clusterrole=node-worker --user=michelle -o yaml --dry-run=client > nodeworker-binding.yaml	Create rolebinding to associate user michelle to role node-worker
+	
+ServiceAccounts:
+	#kubectl get serviceaccounts	Get all service accounts
+	kubectl describe serviceaccount default	See the details on default service account
+	kubectl create serviceaccount dashboard-sa	Create service account
+	
+Image Security
+	kubectl create secret --help	Lists supported secret types
+	kubectl create secret docker-registry private-reg-cred --docker-username=dock_user --docker-password=dock_password --docker-server=myprivateregistry.com:5000 --docker-email=dock_user@myprivateregistry.com	Create secret file
+	
+Security context:
+	#kubectl exec ubuntu-sleeper -- whoami	Check the user name used to run command on pod
+	
+Network Policy:
+	#kubectl get netpol	Get network policy
+		
+	
+Docker commands:
+	Docker volume create data_volume	
+	Docker run -v data_volume: /var/lib/mysql mysql	Persistent data on host
+
+Storage:
+	#kubectl get persistentvolume	To list the persistent volumes on system
+	#kubectl get persistentvolumeclaim	List PVC
+	#kubectl delete persistentvolumeclaim myclaim	To delete PVC
+		
+
+Metrics Server
+	git clone https://github.com/kodekloudhub/kubernetes-metrics-server.git
+	
+Linux:
+	# ip a ---> just like ipconfig
+	# ip route show default --> show gateway
+	# netstat -nplt --> list all the network stats of kube components
+	# ps -aux | grep kubelet
+	# cni plugin files --> /opt/cni/bin/
+	# /etc/cni/net.d/ --> look for config file
+	# kubectl -n project-snake exec backend-0 -- curl -s 10.36.0.18:3333 --> check the app connection from pod
+	
+Crictl:
+	crictl ps | grep tigers-reunite --> like docker ps
+	crictl inspect b01edbe6f89ed | grep runtimeType --> get the runtimeType like describe command
+	
+Kubeadm:
+	kubeadm certs check-expiration
+	kubeadm certs renew apiserver
+	
+Misc:
+	# kubectl get events -A --sort-by=.metadata.creationTimestamp 
+	
+	
