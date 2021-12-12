@@ -3,4 +3,7 @@
 ---------------------------
 CKA Exam prep notes
 ---------------------------
+Index:
+Commands -- all the basic commands to remember
+
 
