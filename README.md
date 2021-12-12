@@ -1,2 +1,6 @@
-# kubernetes
-For all things base kubernetes
+# Kubernetes - For all things base kubernetes
+
+---------------------------
+CKA Exam prep notes
+---------------------------
+
