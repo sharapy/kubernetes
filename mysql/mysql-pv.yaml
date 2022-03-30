@@ -1,0 +1,52 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: localstorage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: data-mysql-01
+  labels:
+    app: mysql
+spec:
+  storageClassName: localstorage
+  capacity:
+    storage: 3Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/mysql01"
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: data-mysql-02
+  labels:
+    app: mysql
+spec:
+  storageClassName: localstorage
+  capacity:
+    storage: 3Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/mysql02"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: data-mysql-03
+  labels:
+    app: mysql
+spec:
+  storageClassName: localstorage
+  capacity:
+    storage: 3Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/mysql03"
