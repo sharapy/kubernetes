@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  name: externalmonitoring
+spec: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pushgateway-service
+  # namespace: brm-prod-apps
+  namespace: externalmonitoring
+  labels:
+    app: pushgateway
+spec:
+  ports:
+    - protocol: TCP
+      name: push-metrics
+      port: 9091
+      targetPort: 9091
+selector: {}
+---
+
+kind: Endpoints
+apiVersion: v1
+metadata:
+  name: pushgateway-service 
+  namespace: externalmonitoring
+subsets: 
+  - addresses:
+    - ip: "192.168.12.1" 
+    ports:
+    - port: 9091
+      name: push-metrics
+  - addresses:
+    - ip: "192.168.12.2" 
+    ports:
+    - port: 9091
+      name: push-metrics
+
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    release: prometheus
+  name: pushgateway-oc3c-smon
+  namespace: externalmonitoring
+spec:
+  endpoints:
+    - interval: 15s
+      path: /metrics
+      port: push-metrics
+      scheme: http
+      scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+      - externalmonitoring
+  selector:
+    matchLabels:
+      app: pushgateway
