@@ -1,0 +1,93 @@
+apiVersion: v1
+data:
+  DATA_SOURCE_NAME: base64 hash
+  # Replace this with your base64 connection string
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: db-exporter
+  namespace: apps-namespace
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oracledb-exporter
+  namespace: apps-namespace
+spec:
+  selector:
+    matchLabels:
+      app: oracledb-exporter
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: oracledb-exporter
+        release: oci-exporter
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9161"
+        prometheus.io/path: "/metrics"
+    spec:
+      imagePullSecrets:
+      - name: brmregsecret
+      containers:
+      - name: oracldb-exporter
+        env:
+        - name: DATA_SOURCE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: db-exporter
+              key: DATA_SOURCE_NAME
+        image: iamseth/oracledb_exporter:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9161
+          name: scrape
+          protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: oracledb-exporter
+  name: oracledb-exporter
+  namespace: apps-namespace
+spec:
+  ports:
+  - name: scrape
+    port: 9161
+    protocol: TCP
+    targetPort: 9161
+  selector:
+    app: oracledb-exporter
+  type: ClusterIP
+
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    release: prometheus
+  name: oracledb-exporter
+  namespace: apps-namespace
+spec:
+  endpoints:
+  - honorLabels: true
+    interval: 15s
+    path: /metrics
+    port: scrape
+    relabelings:
+    - action: labelmap
+      regex: __meta_kubernetes_service_label_(.+)
+    scheme: http
+    scrapeTimeout: 10s
+  jobLabel: oracledb-exporter
+  selector:
+    matchLabels:
+      app: oracledb-exporter
